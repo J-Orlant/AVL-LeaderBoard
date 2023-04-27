@@ -134,16 +134,16 @@ AVL* getPredes(AVL* Curr) {
     return replace;
 }
 
-AVL *deleteNode(AVL *curr, int value) {
+AVL *deleteNode(AVL *curr, int score) {
     if(!curr) {
-        printf(" DELETE: %d not found.\n", value);
+        printf(" DELETE: %d not found.\n", score);
         return NULL;
     }
 
-    if(curr->score > value) curr->left = deleteNode(curr->left, value);
-    if(curr->score < value) curr->right = deleteNode(curr->right, value);
+    if(curr->score > score) curr->left = deleteNode(curr->left, score);
+    if(curr->score < score) curr->right = deleteNode(curr->right, score);
 
-    if(curr->score == value) {
+    if(curr->score == score) {
         if(!curr->left && !curr->right) {
             free(curr);
             return NULL;
@@ -175,20 +175,20 @@ AVL *deleteNode(AVL *curr, int value) {
     curr->height = calculateHeight(curr);
     int balance = calculateBalanceFactor(curr);
 
-    if(balance > 1 && value < curr->left->score) {
+    if(balance > 1 && score < curr->left->score) {
         curr = rightRotate(curr);
     }
     
-    else if(balance > 1 && value > curr->left->score) {
+    else if(balance > 1 && score > curr->left->score) {
         curr->left = leftRotate(curr->left);
         curr = rightRotate(curr);
     }
 
-    else if(balance < -1 && value > curr->right->score) {
+    else if(balance < -1 && score > curr->right->score) {
         curr = leftRotate(curr);
     }
 
-    else if(balance < -1 && value < curr->right->score) {
+    else if(balance < -1 && score < curr->right->score) {
         curr->right = rightRotate(curr->right);
         curr = leftRotate(curr);
     }
@@ -211,17 +211,6 @@ void insert() {
     );
 
     ROOT = insertNode(ROOT, createPlayer(username, job, score, match, win, lose, draw));
-}
-
-void showPlayer(Player *temp) {
-    int i = 1;
-    while (temp)
-    {   
-        printf(" %d) %s\t\t [%10s] ( %.2lf%%)\n",
-            i++, temp->username, job[temp->job], temp->winrate
-        );
-        temp = temp->next;
-    }
 }
 
 void showAll(AVL *curr) {
@@ -276,11 +265,11 @@ AVL* best(AVL *curr) {
     best(curr->right);
 }
 
-AVL* closest(AVL *curr, int value, int res, AVL *cls) {
+AVL* closest(AVL *curr, int value, int oldDiff, AVL *keep) {
     if(!curr) {
-        Player* temp = cls->Head;
-        printf(" Score %d\n", cls->score);
-        showPlayer(cls->Head);
+        Player* temp = keep->Head;
+        printf(" Score %d\n", keep->score);
+        showPlayer(keep->Head);
 
         return NULL;
     }
@@ -293,26 +282,23 @@ AVL* closest(AVL *curr, int value, int res, AVL *cls) {
         return NULL;
     }
     
+    // diff = selisih
 
-    int min = curr->score - value;
-    if(min < 0) min *= -1;
-    // printf("%d - %d : %d [%d]\n", curr->score, value, min, res);
+    int newDiff = curr->score - value;
+    if(newDiff < 0) newDiff *= -1;
 
-    // cls = (min < res) ? curr : cls;
-    // min = (min < res) ? min : res;
-
-    if(res != -1) {
-        if(min < res) {
-            cls = curr;
+    if(oldDiff != -1) {
+        if(newDiff < oldDiff) {
+            keep = curr;
         } else {
-            min = res;
+            newDiff = oldDiff;
         }
     } else  {
-        res = min;
+        oldDiff = newDiff;
     } 
 
-    if(curr->score > value) curr->left = closest(curr->left, value, min, cls);
-    if(curr->score < value) curr->right = closest(curr->right, value, min, cls);
+    if(curr->score > value) curr->left = closest(curr->left, value, newDiff, keep);
+    if(curr->score < value) curr->right = closest(curr->right, value, newDiff, keep);
 }
 
 void menu(int index) {
@@ -361,8 +347,5 @@ int main() {
             if(findAction(command) == -1) goto command;
         
         menu(findAction(command));
-        // pushTail(newCommand(command));
     }
-
-    // viewAction();
 }

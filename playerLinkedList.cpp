@@ -111,13 +111,13 @@ void popAll(Player *head, Player *tail) {
     }    
 }
 
-void view(Player **HEAD) {
-    // printf("%s", HEAD->username);
-    if(!*HEAD) return;
-    
-    Player *CURR = *HEAD;
-    while(CURR) {
-        printf("%s - %.2lf\n", CURR->username, CURR->winrate);
-        CURR = CURR->next;
+void showPlayer(Player *temp) {
+    int i = 1;
+    while (temp)
+    {   
+        printf(" %d) %s\t\t [%10s] ( %.2lf%%)\n",
+            i++, temp->username, job[temp->job], temp->winrate
+        );
+        temp = temp->next;
     }
 }
